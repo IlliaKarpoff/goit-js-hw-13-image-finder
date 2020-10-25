@@ -1,74 +1,59 @@
 import templating from '../templating';
 import api from '../apiService';
+import { mySuccess, myError, myAlert, myNotice } from './notifications';
+import createModal from '../basicLightbox';
 
-const input = document.querySelector('.input');
-const searchBtn = document.querySelector('.searchBtn');
+const form = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
-const loadButton = document.querySelector('.loadButton');
-
-let page = 1;
+let page;
 let searchQuery = '';
-let vh = 1500;
+let loading = null;
+
+const fetch = () => {
+    loading = true;
+    api.fetchPhotos(searchQuery, page).then(({hits, totalHits}) => {
+        if (hits.length === 0) return myAlert();
+        console.log(page, totalHits, hits);
+
+        const lastPage = Math.ceil(totalHits/12);
+        if (page === lastPage) return myNotice();
+
+        templating(hits);
+        mySuccess();
+        // if (typeof cb === 'function') cb();
+        loading = false;
+    })
+    .catch(error => {
+        myError();
+        console.log(error);
+    });
+};
 
 const inputHandler = event => {
     event.preventDefault();
-    page = 1;
-    searchQuery = event.target.value;
-    console.log(searchQuery);
+
     gallery.innerHTML = '';
-    api.fetchPhotos(searchQuery, page).then(({hits}) => {
-        console.log(hits);
-        templating(hits);
-    });
+    page = 1;
+    searchQuery = event.currentTarget.elements.query.value;
+    form.reset();
+    fetch();
 };
-input.addEventListener('blur', inputHandler);
+const incrementPage = () => page += 1;
 
-const buttonHandler = () => {
-    page += 1;
-    console.log(page);
-    scrollTo(0, vh*(page-1)); // ????
-    api.fetchPhotos(searchQuery, page).then(({hits}) => {
-        console.log(hits);
-        templating(hits);
-    });
+const hadleOpenModal = (event) => {
+    if (event.target.nodeName !== 'IMG') { return }
+    createModal(event.target.dataset.source);
+    
 };
-loadButton.addEventListener('click', buttonHandler);
+const onScrollHandler = () => {
+    const pxToBottom = document.documentElement.getBoundingClientRect().bottom;
+    const clientsViewHeight = document.documentElement.clientHeight;
+    if (pxToBottom < (clientsViewHeight+400) && !loading) {
+        incrementPage();
+        fetch();
+    }
+};
 
-// const inputHandler = event => {
-//     event.preventDefault();
-
-//     const form = event.currentTarget;
-//     // console.log(event.currentTarget);
-//     const searchQuery = form.elements.query.value;
-//     // console.log(form.elements.query.value);
-//     // console.log(searchQuery);
-
-//     articlesContainer.innerHTML = ''; // ?????
-//     form.reset();
-
-//     page = 1;
-//     api.fetchPhotos(searchQuery, page).then(photos => {
-//     console.log(photos);
-//     templating(photos);
-//     page += 1;
-//     });
-// };
-// input.addEventListener('submit', inputHandler);
-
-
-// const loadMoreButton = document.querySelector('.loadButton');
-
-// const buttonHandler = () => {
-//     page += 1;
-//     console.log(page);
-//      api.fetchPhotos(searchQuery, page).then(photos => {
-//         console.log(photos);
-//         templating(photos);
-//         page += 1;
-//         });
-// };
-// loadMoreButton.addEventListener('click', buttonHandler);
-
-
-
-
+form.addEventListener('submit', inputHandler);
+gallery.addEventListener('click', hadleOpenModal);
+window.addEventListener('scroll', onScrollHandler);

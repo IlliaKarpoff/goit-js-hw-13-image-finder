@@ -10,6 +10,7 @@ html {
 }
 
 body {
+  text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
@@ -35,10 +36,24 @@ img {
 .gallery__item {
   padding: 10px;
 }
+.largeImage {
+  display: none;
+}
+.isActive {
+  display: block;
+}
 .stats {
   display: flex;
   text-align: center;
 }
 .stats-item {
   margin: 10px;
+}
+.input {
+  padding: 10px;
+}
+.loadButton {
+  padding: 10px;
+  background-color: transparent;
+  cursor: pointer;
 }
