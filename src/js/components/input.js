@@ -13,7 +13,6 @@ const fetch = () => {
     loading = true;
     api.fetchPhotos(searchQuery, page).then(({hits, totalHits}) => {
         if (hits.length === 0) return myAlert();
-        console.log(page, totalHits, hits);
 
         const lastPage = Math.ceil(totalHits/12);
         if (page === lastPage) return myNotice();
